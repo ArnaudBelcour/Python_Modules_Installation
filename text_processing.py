@@ -24,9 +24,22 @@ if choice in moduleInstall.answersYN[1] :
 import nltk
 from nltk import word_tokenize
 from nltk import pos_tag
+from xml.dom import minidom
 
-with open("abstract_ethology_animal.txt", "r") as corpus:
-	for line in corpus:
+def xmlAbstractExtraction(fileName):
+	print ("Parsing and extracting abstracts from corpus")
+	xmldoc = minidom.parse(fileName)
+	l_abstracts = xmldoc.getElementsByTagName('AbstractText')
+
+	l_abstractsExtracted = []
+
+	for abstractDOM in l_abstracts:
+		l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue.decode('utf-8'))
+
+	return l_abstractsExtracted
+
+def tokenizationAndTagging(l_abstract)
+	for line in l_abstract:
 		#creates tokens of a string
 		tokens = word_tokenize(line.decode('utf-8'))
 
