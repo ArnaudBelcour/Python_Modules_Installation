@@ -1,6 +1,5 @@
 #coding: utf-8
 from moduleInstallation import ModuleInstallation
-import sys
 
 def nltkCheckAndInstallation():
 	moduleInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'])
