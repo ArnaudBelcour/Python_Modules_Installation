@@ -5,14 +5,14 @@ import sys
 
 class ModuleInstallation():
 	
-	def __init__(self, moduleToCheck, l_packagesToCheck):	
+	def __init__(self, moduleToCheck, l_packagesToCheck=None):
 		self.pythonVersion = sys.version_info
 		self.nameOS = os.name
 		self.answersYN = (['yes', 'y'], ['no', 'n'])
 		self.module = moduleToCheck
 		self.moduleVersionUsed = "3.2.1"
 		self.packages = l_packagesToCheck
-		
+
 	#Check if module is installed
 	#		if installed, check if needed packages are installed
 	# 		if not, instal it, then refresh the python package path (with reload(site)) to use "import module" in packages check, then run packages check
@@ -30,7 +30,9 @@ class ModuleInstallation():
 					reload(site)
 				elif self.pythonVersion > (3,0,0): 
 					importlib.reload(site)
-			self.checkAndInstallPackages()
+
+			if self.packages is not None :
+				self.checkAndInstallPackages()
 
 		except (ImportError, AttributeError):
 			print("No " + self.module + " module installed.")
@@ -39,7 +41,8 @@ class ModuleInstallation():
 				reload(site)
 			elif self.pythonVersion > (3,0,0):
 				importlib.reload(site)
-			self.checkAndInstallPackages()
+			if self.packages is not None :
+				self.checkAndInstallPackages()
 
 	def moduleUninstall(self):
 		sentenceChoice = self.module + " older version is going to be uninstalled, do you want to proceed(y/n)?\n"
