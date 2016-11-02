@@ -1,8 +1,8 @@
 #coding: utf-8
 from moduleInstallation import ModuleInstallation
+moduleInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'])
 
 def nltkCheckAndInstallation():
-	moduleInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'])
 
 	#Check and, if not present, instal nltk and needed packages
 	choiceSentence =  "Do you want to check " + moduleInstall.module + " and his packages to see if they are up-to-date for our script : \n\t" + moduleInstall.module +" version " + moduleInstall.moduleVersionUsed
@@ -24,6 +24,7 @@ def nltkCheckAndInstallation():
 def xmlAbstractExtraction(fileName):
 	from xml.dom import minidom
 
+	fileName = fileName + ".xml"
 	print ("Parsing and extracting abstracts from corpus")
 	xmldoc = minidom.parse(fileName)
 	l_abstracts = xmldoc.getElementsByTagName('AbstractText')
@@ -31,7 +32,10 @@ def xmlAbstractExtraction(fileName):
 	l_abstractsExtracted = []
 
 	for abstractDOM in l_abstracts:
-		l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue.decode('utf-8'))
+		if moduleInstall.pythonVersion > (3,0,0):
+			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue)
+		if moduleInstall.pythonVersion < (3,0,0):
+			l_abstractsExtracted.append([i.encode('utf-8') for i in abstractDOM.firstChild.nodeValue])
 
 	return l_abstractsExtracted
 
@@ -49,7 +53,7 @@ def tokenizationAndTagging(l_abstract):
 
 def main():
 	nltkCheckAndInstallation()
-	#l_abstract = xmlAbstractExtraction("abstract_ethology_animal")
-	tokenizationAndTagging(["this is a test."])
+	l_abstract = xmlAbstractExtraction("bioninformatic_gene_solanacea")
+	tokenizationAndTagging(l_abstract)
 
 main()
