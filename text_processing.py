@@ -42,12 +42,14 @@ def tokenizationAndTagging(l_abstract):
 
 	for line in l_abstract:
 		#creates tokens of a string
-		tokens = word_tokenize(line.decode('utf-8'))
+		tokens = word_tokenize(line)
 		#tags tokens with their PoS
 		taggedTokens = pos_tag(tokens)
 		print(str(taggedTokens))
 
 def main():
 	nltkCheckAndInstallation()
-	l_abstract = xmlAbstractExtraction("abstract_ethology_animal")
-	tokenizationAndTagging(l_abstract)
+	#l_abstract = xmlAbstractExtraction("abstract_ethology_animal")
+	tokenizationAndTagging(["this is a test."])
+
+main()
