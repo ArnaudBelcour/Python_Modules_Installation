@@ -1,6 +1,6 @@
 #coding: utf-8
 from moduleInstallation import ModuleInstallation
-moduleInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'])
+moduleInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'], "3.2.1")
 
 def nltkCheckAndInstallation():
 
@@ -38,9 +38,10 @@ def xmlAbstractExtraction(fileName):
 		if moduleInstall.pythonVersion > (3,0,0):
 			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue)
 			d_abstractsSentencesExtracted[l_abstracts.index(abstractDOM)] = sent_tokenize(abstractDOM.firstChild.nodeValue.strip())
+			print(".", end = "")
 		if moduleInstall.pythonVersion < (3,0,0):
 			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue.encode('utf-8'))
-
+	print(" Done!")
 	return l_abstractsExtracted, d_abstractsSentencesExtracted
 
 def tokenizationAndTagging(l_abstract):

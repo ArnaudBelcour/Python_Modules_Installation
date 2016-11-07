@@ -5,12 +5,12 @@ import sys
 
 class ModuleInstallation():
 	
-	def __init__(self, moduleToCheck, l_packagesToCheck=None):
+	def __init__(self, moduleToCheck, l_packagesToCheck=None, moduleVersion=None):
 		self.pythonVersion = sys.version_info
 		self.nameOS = os.name
 		self.answersYN = (['yes', 'y'], ['no', 'n'])
 		self.module = moduleToCheck
-		self.moduleVersionUsed = "3.2.1"
+		self.moduleVersionUsed = moduleVersion
 		self.packages = l_packagesToCheck
 
 	#Check if module is installed
@@ -30,9 +30,6 @@ class ModuleInstallation():
 					reload(site)
 				elif self.pythonVersion > (3,0,0): 
 					importlib.reload(site)
-
-			if self.packages is not None :
-				self.checkAndInstallPackages()
 
 		except (ImportError, AttributeError):
 			print("No " + self.module + " module installed.")
