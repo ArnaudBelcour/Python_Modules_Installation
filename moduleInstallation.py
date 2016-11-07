@@ -31,6 +31,14 @@ class ModuleInstallation():
 				elif self.pythonVersion > (3,0,0): 
 					importlib.reload(site)
 
+				if self.packages is not None :
+					self.checkAndInstallPackages()
+
+			else:
+				print("You are using a recent version of " + self.module + ".")
+				if self.packages is not None :
+					self.checkAndInstallPackages()
+
 		except (ImportError, AttributeError):
 			print("No " + self.module + " module installed.")
 			self.moduleInstall()
@@ -38,6 +46,7 @@ class ModuleInstallation():
 				reload(site)
 			elif self.pythonVersion > (3,0,0):
 				importlib.reload(site)
+
 			if self.packages is not None :
 				self.checkAndInstallPackages()
 
