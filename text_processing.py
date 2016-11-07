@@ -23,6 +23,7 @@ def nltkCheckAndInstallation():
 
 def xmlAbstractExtraction(fileName):
 	from xml.dom import minidom
+	from nltk import sent_tokenize
 
 	fileName = fileName + ".xml"
 	print ("Parsing and extracting abstracts from corpus")
@@ -31,16 +32,18 @@ def xmlAbstractExtraction(fileName):
 
 	l_abstractsExtracted = []
 
+	d_abstractsSentencesExtracted = {}
+
 	for abstractDOM in l_abstracts:
 		if moduleInstall.pythonVersion > (3,0,0):
 			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue)
+			d_abstractsSentencesExtracted[l_abstracts.index(abstractDOM)] = sent_tokenize(abstractDOM.firstChild.nodeValue.strip())
 		if moduleInstall.pythonVersion < (3,0,0):
-			l_abstractsExtracted.append([i.encode('utf-8') for i in abstractDOM.firstChild.nodeValue])
+			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue.encode('utf-8'))
 
-	return l_abstractsExtracted
+	return l_abstractsExtracted, d_abstractsSentencesExtracted
 
 def tokenizationAndTagging(l_abstract):
-	import nltk
 	from nltk import word_tokenize
 	from nltk import pos_tag
 
@@ -53,7 +56,7 @@ def tokenizationAndTagging(l_abstract):
 
 def main():
 	nltkCheckAndInstallation()
-	l_abstract = xmlAbstractExtraction("bioninformatic_gene_solanacea")
+	l_abstract, d_abstractWithSentences = xmlAbstractExtraction("zebra_finch_[Title]")
 	tokenizationAndTagging(l_abstract)
 
 main()
