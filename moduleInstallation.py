@@ -17,6 +17,8 @@ class ModuleInstallation():
 	#		if installed, check if needed packages are installed
 	# 		if not, instal it, then refresh the python package path (with reload(site)) to use "import module" in packages check, then run packages check
 	def checkModuleInstallation(self):
+		print("Check if pip is installed.")
+		self.checkpipInstall()
 		print("###\nCheck if " + self.module + " is installed :")
 		try:
 			moduleImported = importlib.import_module(self.module)
@@ -49,6 +51,28 @@ class ModuleInstallation():
 
 			if self.packages is not None :
 				self.checkAndInstallPackages()
+
+	def checkpipInstall(self):
+		try:
+			os.system('pip --version')
+			print("pip is installed.")
+		except:
+			print("###\npip is going to be installed.""")
+			if self.nameOS == 'nt':
+				urllibInstall = ModuleInstallation("urllib2")
+				urllibInstall.checkModuleInstallation()
+				import urllib
+				urllib.urlretrieve ("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
+				if self.pythonVersion < (3,0,0):
+					os.system('python get-pip.py')
+				elif self.pythonVersion > (3,0,0):
+					os.system('python3 get-pip.py')
+				os.remove("get-pip.py")
+			else:
+				if self.pythonVersion < (3,0,0):
+					os.system('sudo apt-get install python-pip')
+				elif self.pythonVersion > (3,0,0):
+					os.system('sudo apt-get install python3-pip')
 
 	def moduleUninstall(self):
 		sentenceChoice = self.module + " older version is going to be uninstalled, do you want to proceed(y/n)?\n"
@@ -84,17 +108,13 @@ class ModuleInstallation():
 			choice = input(sentenceChocie).lower()
 		if choice  in self.answersYN[0] :
 			print("###\n" + self.module + " will be installed, pip needs sudo privilege to correctly install " + self.module + ".")
-			try:
-				if self.nameOS == 'nt':
-					os.system('python -m pip install ' + self.module)
-				else:
-						if self.pythonVersion < (3,0,0): 
-							os.system('sudo pip install ' + self.module)
-						elif self.pythonVersion > (3,0,0):
-							os.system('sudo pip3 install ' + self.module)
-			except (ImportError):
-				os.system('sudo apt-get install python-pip')
-				self.moduleInstall()
+			if self.nameOS == 'nt':
+				os.system('python -m pip install ' + self.module)
+			else:
+					if self.pythonVersion < (3,0,0):
+						os.system('sudo pip install ' + self.module)
+					elif self.pythonVersion > (3,0,0):
+						os.system('sudo pip3 install ' + self.module)
 		if choice in self.answersYN[1]:
 			pass
 

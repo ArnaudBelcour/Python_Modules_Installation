@@ -41,6 +41,7 @@ def xmlAbstractExtraction(fileName):
 			print(".", end = "")
 		if moduleInstall.pythonVersion < (3,0,0):
 			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue.encode('utf-8'))
+			print(".")
 	print(" Done!")
 	return l_abstractsExtracted, d_abstractsSentencesExtracted
 
@@ -57,7 +58,7 @@ def tokenizationAndTagging(l_abstract):
 
 def main():
 	nltkCheckAndInstallation()
-	l_abstract, d_abstractWithSentences = xmlAbstractExtraction("zebra_finch_[Title]")
+	l_abstract, d_abstractWithSentences = xmlAbstractExtraction("predator-prey[Title]")
 	tokenizationAndTagging(l_abstract)
 
 main()
