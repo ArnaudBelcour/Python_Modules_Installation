@@ -24,7 +24,12 @@ class ModuleInstallation():
 			moduleImported = importlib.import_module(self.module)
 			version = moduleImported.__version__
 			print(self.module + " (version " + version + ") is installed.")
-			if version < self.moduleVersionUsed :
+
+			if self.moduleVersionUsed is None :
+				if self.packages is not None :
+					self.checkAndInstallPackages()
+
+			elif version < self.moduleVersionUsed :
 				print("You are using an old version of " + self.module + ". It can result in error with our scripts.")
 				self.moduleUninstall()
 				self.moduleInstall()
@@ -36,7 +41,7 @@ class ModuleInstallation():
 				if self.packages is not None :
 					self.checkAndInstallPackages()
 
-			else:
+			elif version >= self.moduleVersionUsed  :
 				print("You are using a recent version of " + self.module + ".")
 				if self.packages is not None :
 					self.checkAndInstallPackages()
@@ -52,6 +57,7 @@ class ModuleInstallation():
 			if self.packages is not None :
 				self.checkAndInstallPackages()
 
+	#Check if pip is installed and install it if not.
 	def checkpipInstall(self):
 		try:
 			os.system('pip --version')
@@ -74,6 +80,7 @@ class ModuleInstallation():
 				elif self.pythonVersion > (3,0,0):
 					os.system('sudo apt-get install python3-pip')
 
+	#Uninstall previous version of the module.
 	def moduleUninstall(self):
 		sentenceChoice = self.module + " older version is going to be uninstalled, do you want to proceed(y/n)?\n"
 		if self.pythonVersion < (3,0,0): 

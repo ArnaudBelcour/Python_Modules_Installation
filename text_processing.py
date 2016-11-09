@@ -1,31 +1,43 @@
 #coding: utf-8
 from moduleInstallation import ModuleInstallation
-moduleInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'], "3.2.1")
+nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'], "3.2.1")
 
-def nltkCheckAndInstallation():
+#Check and, if not present, instal nltk and needed packages
+def moduleCheckAndInstallation(moduleInstallationInstance):
 
-	#Check and, if not present, instal nltk and needed packages
-	choiceSentence =  "Do you want to check " + moduleInstall.module + " and his packages to see if they are up-to-date for our script : \n\t" + moduleInstall.module +" version " + moduleInstall.moduleVersionUsed
+	if moduleInstallationInstance.moduleVersionUsed is None:
+		choiceSentence =  "Do you want to check " + moduleInstallationInstance.module + " installation?"
+	if moduleInstallationInstance.moduleVersionUsed is not None:
+		choiceSentence =  "Do you want to check " +moduleInstallationInstance.module + " and his packages to see if they are up-to-date for our script : \n\t" + moduleInstallationInstance.module +" version " + moduleInstallationInstance.moduleVersionUsed
 
-	for package in moduleInstall.packages :
-		choiceSentence += "\n\tpackage " + package
-	choiceSentence += "\nProceed(y/n)?"
+	if moduleInstallationInstance.packages is not None:
+		for package in moduleInstallationInstance.packages :
+			choiceSentence += "\n\tpackage " + package
+		choiceSentence += "\nProceed(y/n)?"
 
-	if moduleInstall.pythonVersion < (3,0,0):
+	if moduleInstallationInstance.pythonVersion < (3,0,0):
 		choice = raw_input(choiceSentence).lower()
-	elif moduleInstall.pythonVersion > (3,0,0):
+	elif moduleInstallationInstance.pythonVersion > (3,0,0):
 		choice = input(choiceSentence).lower()
 
-	if choice  in moduleInstall.answersYN[0] :
-		moduleInstall.checkModuleInstallation()
-	if choice in moduleInstall.answersYN[1] :
+	if choice  in moduleInstallationInstance.answersYN[0] :
+		moduleInstallationInstance.checkModuleInstallation()
+	if choice in moduleInstallationInstance.answersYN[1] :
 				pass
 
+#Extract abstract fom xml downloaded from Pubmed.
 def xmlAbstractExtraction(fileName):
 	from xml.dom import minidom
 	from nltk import sent_tokenize
 
+	#Check if progress is installed to show progression bar
+	progressInstall = ModuleInstallation("progress")
+	moduleCheckAndInstallation(progressInstall)
+
+	from progress.bar import Bar
+
 	fileName = fileName + ".xml"
+
 	print ("Parsing and extracting abstracts from corpus")
 	xmldoc = minidom.parse(fileName)
 	l_abstracts = xmldoc.getElementsByTagName('AbstractText')
@@ -34,30 +46,44 @@ def xmlAbstractExtraction(fileName):
 
 	d_abstractsSentencesExtracted = {}
 
+	bar = Bar('Processing', max=len(l_abstracts))
+
 	for abstractDOM in l_abstracts:
-		if moduleInstall.pythonVersion > (3,0,0):
+		if nltkInstall.pythonVersion < (3,0,0):
+			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue.encode('utf-8'))
+
+		if nltkInstall.pythonVersion > (3,0,0):
 			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue)
 			d_abstractsSentencesExtracted[l_abstracts.index(abstractDOM)] = sent_tokenize(abstractDOM.firstChild.nodeValue.strip())
-			print(".", end = "")
-		if moduleInstall.pythonVersion < (3,0,0):
-			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue.encode('utf-8'))
-			print(".")
-	print(" Done!")
+			bar.next()
+
+	bar.finish()
+
+	print("Abstracts extracted!")
 	return l_abstractsExtracted, d_abstractsSentencesExtracted
 
+#Tokenize and tag abstract.
 def tokenizationAndTagging(l_abstract):
 	from nltk import word_tokenize
 	from nltk import pos_tag
+	from progress.bar import Bar
+
+	print ("Abstract tokenization and tagging")
+	bar = Bar('Processing', max=len(l_abstract))
 
 	for line in l_abstract:
 		#creates tokens of a string
 		tokens = word_tokenize(line)
 		#tags tokens with their PoS
 		taggedTokens = pos_tag(tokens)
-		print(str(taggedTokens))
+		bar.next()
+
+	bar.finish()
+
+	print("Abstracts tokenized and tagged.")
 
 def main():
-	nltkCheckAndInstallation()
+	moduleCheckAndInstallation(nltkInstall)
 	l_abstract, d_abstractWithSentences = xmlAbstractExtraction("predator-prey[Title]")
 	tokenizationAndTagging(l_abstract)
 
