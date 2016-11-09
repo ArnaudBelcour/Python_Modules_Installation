@@ -6,14 +6,16 @@ nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger']
 def moduleCheckAndInstallation(moduleInstallationInstance):
 
 	if moduleInstallationInstance.moduleVersionUsed is None:
-		choiceSentence =  "Do you want to check " + moduleInstallationInstance.module + " installation?"
+		choiceSentence =  "Do you want to check " + moduleInstallationInstance.module + " installation? "
 	if moduleInstallationInstance.moduleVersionUsed is not None:
-		choiceSentence =  "Do you want to check " +moduleInstallationInstance.module + " and his packages to see if they are up-to-date for our script : \n\t" + moduleInstallationInstance.module +" version " + moduleInstallationInstance.moduleVersionUsed
+		choiceSentence =  "Do you want to check " +moduleInstallationInstance.module + \
+		" and his packages to see if they are up-to-date for our script : \n\t" + \
+		moduleInstallationInstance.module + " version " + moduleInstallationInstance.moduleVersionUsed
 
 	if moduleInstallationInstance.packages is not None:
 		for package in moduleInstallationInstance.packages :
 			choiceSentence += "\n\tpackage " + package
-		choiceSentence += "\nProceed(y/n)?"
+		choiceSentence += "\nProceed(y/n)? "
 
 	if moduleInstallationInstance.pythonVersion < (3,0,0):
 		choice = raw_input(choiceSentence).lower()
