@@ -67,13 +67,10 @@ def xmlAbstractExtraction(fileName):
 def sentenceCheck(d_abstracts):
 	from progress.bar import Bar
 
-	l_sentencesLenghts = [len(value) for value in d_abstracts.values()]
-	sentencesLenghtNumber = 0
-	for sentencesLenght in l_sentencesLenghts:
-		sentencesLenghtNumber += sentencesLenght
+	sentencesNumber = sum([len(value) for value in d_abstracts.values()])
 
 	print("Sentences Consistency check.")
-	bar = Bar('Processing', max= sentencesLenghtNumber)
+	bar = Bar('Processing', max= sentencesNumber)
 
 	countSentencesChange = 0
 	for abstract in d_abstracts:
