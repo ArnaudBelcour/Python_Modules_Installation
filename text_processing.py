@@ -64,6 +64,33 @@ def xmlAbstractExtraction(fileName):
 	print("Abstracts extracted!")
 	return l_abstractsExtracted, d_abstractsSentencesExtracted
 
+def sentenceCheck(d_abstracts):
+	from progress.bar import Bar
+
+	l_sentencesLenghts = [len(value) for value in d_abstracts.values()]
+	sentencesLenghtNumber = 0
+	for sentencesLenght in l_sentencesLenghts:
+		sentencesLenghtNumber += sentencesLenght
+
+	print("Sentences Consistency check.")
+	bar = Bar('Processing', max= sentencesLenghtNumber)
+
+	countSentencesChange = 0
+	for abstract in d_abstracts:
+		for sentence in d_abstracts[abstract]:
+			if d_abstracts[abstract][sentence.index(sentence)][-2:] == ".)":
+				d_abstracts[abstract][sentence.index(sentence):sentence.index(sentence)+2] = [' '.join(d_abstracts[abstract][sentence.index(sentence):sentence.index(sentence)+2])]
+				bar.next()
+				countSentencesChange += 1
+			bar.next()
+
+	bar.finish()
+
+	print("Sentences consistency check finished!")
+	print(str(countSentencesChange) + " sentences have been modified.")
+
+	return d_abstracts
+
 #Tokenize and tag abstract.
 def tokenizationAndTagging(l_abstract):
 	from nltk import word_tokenize
@@ -87,6 +114,8 @@ def tokenizationAndTagging(l_abstract):
 def main():
 	moduleCheckAndInstallation(nltkInstall)
 	l_abstract, d_abstractWithSentences = xmlAbstractExtraction("predator-prey[Title]")
+	d_abstractWithSentencesModified = sentenceCheck(d_abstractWithSentences)
 	tokenizationAndTagging(l_abstract)
+	print(d_abstractWithSentencesModified)
 
 main()
