@@ -1,4 +1,4 @@
-Relations Between Noun/Verb
+# Relations Between Noun/Verb
 
 These scripts search for relation between nouns and verbs from Pubmed abstracts.
 It is for a project in a Text Mining and Analytics course.
