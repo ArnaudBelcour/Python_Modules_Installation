@@ -65,8 +65,7 @@ class ModuleInstallation():
 		except:
 			print("###\npip is going to be installed.""")
 			if self.nameOS == 'nt':
-				urllibInstall = ModuleInstallation("urllib2")
-				urllibInstall.checkModuleInstallation()
+				os.system("easy_install urllib3")
 				import urllib
 				urllib.urlretrieve ("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
 				if self.pythonVersion < (3,0,0):
