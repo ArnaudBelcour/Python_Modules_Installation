@@ -27,6 +27,11 @@ def moduleCheckAndInstallation(moduleInstallationInstance):
 	if choice in moduleInstallationInstance.answersYN[1] :
 				pass
 
+def python2Utf8Encoding():
+	import sys
+	reload(sys)
+	sys.setdefaultencoding('utf8')
+
 #Extract abstract fom xml downloaded from Pubmed.
 def xmlAbstractExtraction(fileName):
 	from xml.dom import minidom
@@ -52,7 +57,11 @@ def xmlAbstractExtraction(fileName):
 
 	for abstractDOM in l_abstracts:
 		if nltkInstall.pythonVersion < (3,0,0):
-			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue.encode('utf-8'))
+			python2Utf8Encoding()
+			abstract = abstractDOM.firstChild.nodeValue.encode('utf-8')
+			l_abstractsExtracted.append(abstract)
+			d_abstractsSentencesExtracted[l_abstracts.index(abstractDOM)] = sent_tokenize(abstract.strip())
+			bar.next()
 
 		if nltkInstall.pythonVersion > (3,0,0):
 			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue)
