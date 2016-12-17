@@ -12,14 +12,18 @@ class ModuleInstallation():
 		self.module = moduleToCheck
 		self.moduleVersionUsed = moduleVersion
 		self.packages = l_packagesToCheck
+		self.pipVerification = False
 
 	#Check if module is installed
 	#		if installed, check if needed packages are installed
 	# 		if not, instal it, then refresh the python package path (with reload(site)) to use "import module" in packages check, then run packages check
 	def checkModuleInstallation(self):
-		print("Check if pip is installed.")
-		self.checkpipInstall()
+
+		if self.pipVerification == False:
+			print("Check if pip is installed.")
+			self.checkpipInstall()
 		print("###\nCheck if " + self.module + " is installed :")
+
 		try:
 			moduleImported = importlib.import_module(self.module)
 			version = moduleImported.__version__
@@ -46,7 +50,7 @@ class ModuleInstallation():
 				if self.packages is not None :
 					self.checkAndInstallPackages()
 
-		except (ImportError, AttributeError):
+		except (ImportError):
 			print("No " + self.module + " module installed.")
 			self.moduleInstall()
 			if self.pythonVersion < (3,0,0): 
@@ -62,6 +66,7 @@ class ModuleInstallation():
 		try:
 			os.system('pip --version')
 			print("pip is installed.")
+			self.pipVerification = True
 		except:
 			print("###\npip is going to be installed.""")
 			if self.nameOS == 'nt':
@@ -73,11 +78,14 @@ class ModuleInstallation():
 				elif self.pythonVersion > (3,0,0):
 					os.system('python3 get-pip.py')
 				os.remove("get-pip.py")
+				self.pipVerification = True
 			else:
 				if self.pythonVersion < (3,0,0):
 					os.system('sudo apt-get install python-pip')
+					self.pipVerification = True
 				elif self.pythonVersion > (3,0,0):
 					os.system('sudo apt-get install python3-pip')
+					self.pipVerification = True
 
 	#Uninstall previous version of the module.
 	def moduleUninstall(self):
@@ -86,24 +94,26 @@ class ModuleInstallation():
 			choice = raw_input(sentenceChoice).lower()
 		elif self.pythonVersion > (3,0,0):
 			choice = input(sentenceChoice).lower()
+
 		if choice  in self.answersYN[0] :
 			print("###\n" + self.module +" older version is going to be uninstalled, pip needs privilege to correctly uninstall " + self.module +".")
-			try:
-				if self.nameOS == 'nt':
-					print("###\nYou are using windows, does your cmd runs with administrator right?")
-					print("###\nIf not pip can't install or uninstall packages.") 
-					os.system('python -m pip uninstall ' + self.module)
-				else:
-						if self.pythonVersion < (3,0,0): 
-							os.system('sudo pip uninstall ' + self.module)
-						elif self.pythonVersion > (3,0,0):
-							os.system('sudo pip3 uninstall ' + self.module)
-			except (ImportError):
-				os.system('sudo apt-get install python-pip')
-				self.moduleInstall()
-		if choice in self.answerYN[1]:
+			if self.nameOS == 'nt':
+				print("###\nYou are using windows, does your cmd runs with administrator right?")
+				print("###\nIf not pip can't install or uninstall packages.")
+				os.system('python -m pip uninstall ' + self.module)
+			else:
+					if self.pythonVersion < (3,0,0):
+						os.system('sudo pip uninstall ' + self.module)
+					elif self.pythonVersion > (3,0,0):
+						os.system('sudo pip3 uninstall ' + self.module)
+
+		elif choice in self.answersYN[1]:
 			pass
-			
+
+		elif choice not in self.answersYN:
+			print("\nUncorrect answer, please rewrite it.\n")
+			self.moduleUninstall()
+
 	#Install module, needs permission
 	#If pip is not installed, the script will install it
 	def moduleInstall(self):
@@ -112,6 +122,7 @@ class ModuleInstallation():
 			choice = raw_input(sentenceChocie).lower()
 		elif self.pythonVersion > (3,0,0):
 			choice = input(sentenceChocie).lower()
+
 		if choice  in self.answersYN[0] :
 			print("###\n" + self.module + " will be installed, pip needs sudo privilege to correctly install " + self.module + ".")
 			if self.nameOS == 'nt':
@@ -121,8 +132,13 @@ class ModuleInstallation():
 						os.system('sudo pip install ' + self.module)
 					elif self.pythonVersion > (3,0,0):
 						os.system('sudo pip3 install ' + self.module)
-		if choice in self.answersYN[1]:
+
+		elif choice in self.answersYN[1]:
 			pass
+
+		elif choice not in self.answersYN:
+			print("\nUncorrect answer, please rewrite it.\n")
+			self.moduleInstall()
 
 	#Check and install module needed packages
 	def checkAndInstallPackages(self):

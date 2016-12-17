@@ -6,7 +6,7 @@ nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger']
 def moduleCheckAndInstallation(moduleInstallationInstance):
 
 	if moduleInstallationInstance.moduleVersionUsed is None:
-		choiceSentence =  "Do you want to check " + moduleInstallationInstance.module + " installation? "
+		choiceSentence =  "Do you want to check " + moduleInstallationInstance.module + " installation (y/n)? "
 	if moduleInstallationInstance.moduleVersionUsed is not None:
 		choiceSentence =  "Do you want to check " +moduleInstallationInstance.module + \
 		" and his packages to see if they are up-to-date for our script : \n\t" + \
@@ -24,22 +24,34 @@ def moduleCheckAndInstallation(moduleInstallationInstance):
 
 	if choice  in moduleInstallationInstance.answersYN[0] :
 		moduleInstallationInstance.checkModuleInstallation()
-	if choice in moduleInstallationInstance.answersYN[1] :
+	elif choice in moduleInstallationInstance.answersYN[1] :
 				pass
+	elif choice not in moduleInstallationInstance.answersYN:
+		print("\n Uncorrect answer, please rewrite it.\n")
+		moduleCheckAndInstallation(nltkInstall)
 
 def python2Utf8Encoding():
 	import sys
 	reload(sys)
 	sys.setdefaultencoding('utf8')
 
+def progressInstallation():
+	#Check if progress is installed to show progression bar
+	#And import basic data from nltkInstall Instance to ease installation
+	progressInstall = ModuleInstallation("progress")
+
+	progressInstall.pipVerification = nltkInstall.pipVerification
+	progressInstall.pythonVersion = nltkInstall.pythonVersion
+	progressInstall.nameOS = nltkInstall.nameOS
+
+	moduleCheckAndInstallation(progressInstall)
+
 #Extract abstract fom xml downloaded from Pubmed.
 def xmlAbstractExtraction(fileName):
 	from xml.dom import minidom
 	from nltk import sent_tokenize
 
-	#Check if progress is installed to show progression bar
-	progressInstall = ModuleInstallation("progress")
-	moduleCheckAndInstallation(progressInstall)
+	progressInstallation()
 
 	from progress.bar import Bar
 
