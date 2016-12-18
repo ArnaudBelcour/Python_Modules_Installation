@@ -5,28 +5,28 @@ nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger']
 #Check and, if not present, instal nltk and needed packages
 def moduleCheckAndInstallation(moduleInstallationInstance):
 
-	if moduleInstallationInstance.moduleVersionUsed is None:
-		choiceSentence =  "Do you want to check " + moduleInstallationInstance.module + " installation (y/n)? "
-	if moduleInstallationInstance.moduleVersionUsed is not None:
-		choiceSentence =  "Do you want to check " +moduleInstallationInstance.module + \
+	if moduleInstallationInstance.getModuleVersionUsed() is None:
+		choiceSentence =  "Do you want to check " + moduleInstallationInstance.getModule() + " installation (y/n)? "
+	if moduleInstallationInstance.getModuleVersionUsed() is not None:
+		choiceSentence =  "Do you want to check " +moduleInstallationInstance.getModule() + \
 		" and his packages to see if they are up-to-date for our script : \n\t" + \
-		moduleInstallationInstance.module + " version " + moduleInstallationInstance.moduleVersionUsed
+		moduleInstallationInstance.getModule() + " version " + moduleInstallationInstance.getModuleVersionUsed()
 
-	if moduleInstallationInstance.packages is not None:
-		for package in moduleInstallationInstance.packages :
+	if moduleInstallationInstance.getPackages() is not None:
+		for package in moduleInstallationInstance.getPackages() :
 			choiceSentence += "\n\tpackage " + package
 		choiceSentence += "\nProceed(y/n)? "
 
-	if moduleInstallationInstance.pythonVersion < (3,0,0):
+	if moduleInstallationInstance.getPythonVersion() < (3,0,0):
 		choice = raw_input(choiceSentence).lower()
-	elif moduleInstallationInstance.pythonVersion > (3,0,0):
+	elif moduleInstallationInstance.getPythonVersion() > (3,0,0):
 		choice = input(choiceSentence).lower()
 
-	if choice  in moduleInstallationInstance.answersYN[0] :
+	if choice  in moduleInstallationInstance.getAnswersYN()[0] :
 		moduleInstallationInstance.checkModuleInstallation()
-	elif choice in moduleInstallationInstance.answersYN[1] :
+	elif choice in moduleInstallationInstance.getAnswersYN()[1] :
 				pass
-	elif choice not in moduleInstallationInstance.answersYN:
+	elif choice not in moduleInstallationInstance.getAnswersYN():
 		print("\n Uncorrect answer, please rewrite it.\n")
 		moduleCheckAndInstallation(nltkInstall)
 
@@ -40,9 +40,9 @@ def progressInstallation():
 	#And import basic data from nltkInstall Instance to ease installation
 	progressInstall = ModuleInstallation("progress")
 
-	progressInstall.pipVerification = nltkInstall.pipVerification
-	progressInstall.pythonVersion = nltkInstall.pythonVersion
-	progressInstall.nameOS = nltkInstall.nameOS
+	progressInstall.setPipVerification(nltkInstall.getPipVerification())
+	progressInstall.setPythonVersion(nltkInstall.getPythonVersion())
+	progressInstall.setNameOS(nltkInstall.getNameOS())
 
 	moduleCheckAndInstallation(progressInstall)
 
@@ -68,14 +68,14 @@ def xmlAbstractExtraction(fileName):
 	bar = Bar('Processing', max=len(l_abstracts))
 
 	for abstractDOM in l_abstracts:
-		if nltkInstall.pythonVersion < (3,0,0):
+		if nltkInstall.getPythonVersion() < (3,0,0):
 			python2Utf8Encoding()
 			abstract = abstractDOM.firstChild.nodeValue.encode('utf-8')
 			l_abstractsExtracted.append(abstract)
 			d_abstractsSentencesExtracted[l_abstracts.index(abstractDOM)] = sent_tokenize(abstract.strip())
 			bar.next()
 
-		if nltkInstall.pythonVersion > (3,0,0):
+		if nltkInstall.getPythonVersion() > (3,0,0):
 			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue)
 			d_abstractsSentencesExtracted[l_abstracts.index(abstractDOM)] = sent_tokenize(abstractDOM.firstChild.nodeValue.strip())
 			bar.next()
