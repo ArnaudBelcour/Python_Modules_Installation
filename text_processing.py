@@ -165,9 +165,9 @@ def nouns_and_verbs_by_sentences(token_pos_text):
 				NandV = {}
 				pos = token[1]
 				if (pos in nltk_nouns) and (pos not in nouns):
-					nouns.append(token[0])
+					nouns.append(token[0].lower())
 				elif (pos in nltk_verbs) and (pos not in verbs):
-					verbs.append(token[0])
+					verbs.append(token[0].lower())
 
 			NandV = {'N':nouns,'V':verbs}  #each key is a line number start at 0, the first sentence is the 0 key, the second 1 ect...
 			d_sentencePerAbstracts[numberOfsentence] = NandV
