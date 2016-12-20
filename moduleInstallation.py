@@ -35,12 +35,6 @@ class ModuleInstallation():
 	def getPipVerification(self):
 		return self.pipVerification
 
-	def setPythonVersion(self, versionOfPython):
-		self.pythonVersion = versionOfPython
-
-	def setNameOS(self, nameOfOS):
-		self.nameOS = nameOfOS
-
 	def setPipVerification(self, boolean):
 		self.pipVerification = boolean
 

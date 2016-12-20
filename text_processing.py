@@ -1,6 +1,5 @@
 #coding: utf-8
 from moduleInstallation import ModuleInstallation
-nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'], "3.2.1")
 
 #Check and, if not present, instal nltk and needed packages
 def moduleCheckAndInstallation(moduleInstallationInstance):
@@ -35,65 +34,60 @@ def python2Utf8Encoding():
 	reload(sys)
 	sys.setdefaultencoding('utf8')
 
-def progressInstallation():
+def progressInstallation(nltkInstall):
 	#Check if progress is installed to show progression bar
 	#And import basic data from nltkInstall Instance to ease installation
 	progressInstall = ModuleInstallation("progress")
 
 	progressInstall.setPipVerification(nltkInstall.getPipVerification())
-	progressInstall.setPythonVersion(nltkInstall.getPythonVersion())
-	progressInstall.setNameOS(nltkInstall.getNameOS())
 
 	moduleCheckAndInstallation(progressInstall)
 
 #Extract abstract fom xml downloaded from Pubmed.
-def xmlAbstractExtraction(fileName):
+def xmlAbstractExtraction(fileName, nltkInstall):
 	from xml.dom import minidom
 	from nltk import sent_tokenize
 
-	progressInstallation()
+	progressInstallation(nltkInstall)
 
 	from progress.bar import Bar
 
 	fileName = fileName + ".xml"
 
-	print ("Parsing and extracting abstracts from corpus")
 	xmldoc = minidom.parse(fileName)
 	l_abstracts = xmldoc.getElementsByTagName('AbstractText')
 
-	l_abstractsExtracted = []
-
 	d_abstractsSentencesExtracted = {}
 
+	print ("\nParsing and extracting abstracts from corpus")
 	bar = Bar('Processing', max=len(l_abstracts))
 
 	for abstractDOM in l_abstracts:
 		if nltkInstall.getPythonVersion() < (3,0,0):
 			python2Utf8Encoding()
 			abstract = abstractDOM.firstChild.nodeValue.encode('utf-8')
-			l_abstractsExtracted.append(abstract)
 			d_abstractsSentencesExtracted[l_abstracts.index(abstractDOM)] = sent_tokenize(abstract.strip())
 			bar.next()
 
 		if nltkInstall.getPythonVersion() > (3,0,0):
-			l_abstractsExtracted.append(abstractDOM.firstChild.nodeValue)
 			d_abstractsSentencesExtracted[l_abstracts.index(abstractDOM)] = sent_tokenize(abstractDOM.firstChild.nodeValue.strip())
 			bar.next()
 
 	bar.finish()
 
 	print("Abstracts extracted!")
-	return l_abstractsExtracted, d_abstractsSentencesExtracted
+	return d_abstractsSentencesExtracted
 
 def sentenceCheck(d_abstracts):
 	from progress.bar import Bar
 
 	sentencesNumber = sum([len(value) for value in d_abstracts.values()])
 
-	print("Sentences Consistency check.")
+	countSentencesChange = 0
+
+	print("\nSentences Consistency check.")
 	bar = Bar('Processing', max= sentencesNumber)
 
-	countSentencesChange = 0
 	for abstract in d_abstracts:
 		for sentence in d_abstracts[abstract]:
 			if d_abstracts[abstract][sentence.index(sentence)][-2:] == ".)":
@@ -110,30 +104,199 @@ def sentenceCheck(d_abstracts):
 	return d_abstracts
 
 #Tokenize and tag abstract.
-def tokenizationAndTagging(l_abstract):
+def tokenizationAndTagging(d_abstracts):
 	from nltk import word_tokenize
 	from nltk import pos_tag
 	from progress.bar import Bar
 
-	print ("Abstract tokenization and tagging")
-	bar = Bar('Processing', max=len(l_abstract))
+	d_abstracts_text_lines = {}
 
-	for line in l_abstract:
-		#creates tokens of a string
-		tokens = word_tokenize(line)
-		#tags tokens with their PoS
-		taggedTokens = pos_tag(tokens)
+	numberOfAbstracts = 1
+
+	sentencesNumber = sum([len(value) for value in d_abstracts.values()])
+
+	print ("\nAbstract tokenization and tagging")
+	bar = Bar('Processing', max = len(d_abstracts))
+
+	for index, abstract in d_abstracts.items():
+		numberOfSentence = 1
+		d_sentencePerAbstracts = {}
+
+		for line in abstract:
+			#creates tokens of a string
+			tokens = word_tokenize(line)
+			#tags tokens with their PoS
+			taggedTokens = pos_tag(tokens)
+			numberOfSentence += 1
+			d_sentencePerAbstracts[numberOfSentence] = taggedTokens
+
+		d_abstracts_text_lines[numberOfAbstracts] = d_sentencePerAbstracts
+		numberOfAbstracts += 1
 		bar.next()
 
 	bar.finish()
 
 	print("Abstracts tokenized and tagged.")
+	return d_abstracts_text_lines
+
+def nouns_and_verbs_by_sentences(token_pos_text):
+	#translate all sentence in a dictionnary with two keys V and N for two lists a verb list and a noun list.
+
+	from progress.bar import Bar
+
+	nltk_verbs = ['VB','VBD','VBG','VBN','VBP','VBZ'] #verb PoS with nltk tagger
+	nltk_nouns = ['NN','NNS','NNP','NNPS'] #noun PoS with nltk tagger
+
+	d_abstracts_sentences_NandV = {}
+	numberOfAbstracts = 1
+
+	print("\nNouns and verbs in abstracts extraction.")
+	bar = Bar('Processing', max = len(token_pos_text))
+
+	for abstractIndex, abstract in token_pos_text.items():
+		d_sentencePerAbstracts = {}
+		numberOfsentence = 0
+
+		for sentenceIndex, sentence in abstract.items():
+			verbs = []
+			nouns = []
+
+			for token in sentence:
+				NandV = {}
+				pos = token[1]
+				if (pos in nltk_nouns) and (pos not in nouns):
+					nouns.append(token[0])
+				elif (pos in nltk_verbs) and (pos not in verbs):
+					verbs.append(token[0])
+
+			NandV = {'N':nouns,'V':verbs}  #each key is a line number start at 0, the first sentence is the 0 key, the second 1 ect...
+			d_sentencePerAbstracts[numberOfsentence] = NandV
+			numberOfsentence += 1
+
+		d_abstracts_sentences_NandV[numberOfAbstracts] = d_sentencePerAbstracts
+		numberOfAbstracts += 1
+		bar.next()
+
+	bar.finish()
+
+	print("Nouns and verbs in abstracts extracted.")
+	return d_abstracts_sentences_NandV
+
+def check_couple_in_sentences(d_abstracts_sentences_NandV, window):
+#this function use a text translated in a NadnV text and check all couples (verb/nouns) and their occurence.
+	from progress.bar import Bar
+
+	d_abstracts_sentences_couples_checked = {}
+	numberOfAbstracts = 1
+
+	print("\nChecking couples in sentences in abstracts.")
+	bar = Bar('Processing', max = len(d_abstracts_sentences_NandV))
+
+	for abstractIndex, abstract in d_abstracts_sentences_NandV.items():
+
+		numlines = len(abstract.values())
+		d_abstracts_sentences_couples = {}
+		for lines in range(window, numlines-window):
+			d_abstract_couple_numbers = {}
+			if lines == window: #at the beginning
+				nouns = []
+				verbs = []
+				for i in range (lines-window, lines+window):
+					sentence = abstract[i]
+					nouns = nouns + sentence['N']
+					verbs = verbs + sentence['V']
+				V_len = len(verbs)
+				N_len = len(nouns)
+				if V_len >= N_len:
+					for i in range (0,V_len):
+						for j in range(0, N_len):
+							couple = verbs[i] + '\\' + nouns[j]
+							if couple not in d_abstract_couple_numbers.keys():
+								d_abstract_couple_numbers[couple] = 1
+							else:
+								d_abstract_couple_numbers[couple] = d_abstract_couple_numbers[couple] + 1
+				elif V_len < N_len:
+					for i in range (0,N_len):
+						for j in range(0, V_len):
+							couple = verbs[j] + '\\' + nouns[i]
+							if couple not in d_abstract_couple_numbers.keys():
+								d_abstract_couple_numbers[couple] = 1
+							else:
+								d_abstract_couple_numbers[couple] = d_abstract_couple_numbers[couple] + 1
+
+			elif lines > window and lines < (numlines - window - 1) : #during the analysis
+				last_sentence = abstract[lines + window]
+				for i in range (lines - window, lines + window - 1): #parcour les phrases precedent la nouvelle phrase lors du glissement de la fenêtre.
+					sentence = abstract[i]
+					nouns = sentence['N'] + last_sentence['N']
+					verbs = sentence['V'] + last_sentence['V']
+					V_len = len(verbs)
+					N_len = len(nouns)
+					if V_len >= N_len:
+						for i in range (0,V_len):
+							for j in range(0, N_len):
+								couple = verbs[i] + '\\' + nouns[j]
+								if couple not in d_abstract_couple_numbers.keys():
+									d_abstract_couple_numbers[couple] = 1
+								else:
+									d_abstract_couple_numbers[couple] = d_abstract_couple_numbers[couple] + 1
+					elif V_len < N_len:
+						for i in range (0,N_len):
+							for j in range(0, V_len):
+								couple = verbs[j] + '\\' + nouns[i]
+								if couple not in d_abstract_couple_numbers.keys():
+									d_abstract_couple_numbers[couple] = 1
+								else:
+									d_abstract_couple_numbers[couple] = d_abstract_couple_numbers[couple] + 1
+
+			elif lines == (numlines - window - 1): #at the end
+				nouns = abstract[lines]['N']
+				verbs = abstract[lines]['V']
+				for i in range (lines + 1, numlines):
+					sentence = abstract[i]
+					nouns = nouns + sentence['N']
+					verbs = verbs + sentence['V']
+				for i in range (lines - window,lines):
+					sentence = abstract[i]
+					for a_noun in sentence['N']:
+						for a_verb in verbs:
+							couple = a_verb + '\\' + a_noun
+							if couple not in d_abstract_couple_numbers.keys():
+								d_abstract_couple_numbers[couple] = 1
+							else:
+								d_abstract_couple_numbers[couple] = d_abstract_couple_numbers[couple] + 1
+					for a_noun in nouns:
+						for a_verb in sentence['V']:
+							couple = a_verb + '\\' + a_noun
+							if couple not in d_abstract_couple_numbers.keys():
+								d_abstract_couple_numbers[couple] = 1
+							else:
+								d_abstract_couple_numbers[couple] = d_abstract_couple_numbers[couple] + 1
+				for a_noun in nouns:
+					for a_verb in verbs:
+						couple = a_verb + '\\' + a_noun
+						if couple not in d_abstract_couple_numbers.keys():
+							d_abstract_couple_numbers[couple] = 1
+						else:
+							d_abstract_couple_numbers[couple] = d_abstract_couple_numbers[couple] + 1
+
+		d_abstracts_sentences_couples_checked[numberOfAbstracts] = d_abstract_couple_numbers
+		numberOfAbstracts += 1
+		bar.next()
+
+	bar.finish()
+
+	print("Couples in sentences in abstracts checked.")
+	return d_abstracts_sentences_couples_checked
 
 def main():
+	nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'], "3.2.1")
 	moduleCheckAndInstallation(nltkInstall)
-	l_abstract, d_abstractWithSentences = xmlAbstractExtraction("predator-prey[Title]")
+	d_abstractWithSentences = xmlAbstractExtraction("predator-prey[Title]", nltkInstall)
 	d_abstractWithSentencesModified = sentenceCheck(d_abstractWithSentences)
-	tokenizationAndTagging(l_abstract)
-	print(d_abstractWithSentencesModified)
+	d_abstracts_text_lines = tokenizationAndTagging(d_abstractWithSentencesModified)
+	d_abstracts_sentences_NandV = nouns_and_verbs_by_sentences(d_abstracts_text_lines)
+	d_abstract_couple_numbers = check_couple_in_sentences(d_abstracts_sentences_NandV , 1)
+	print(d_abstract_couple_numbers)
 
 main()
