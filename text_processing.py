@@ -36,15 +36,23 @@ def python2Utf8Encoding():
 
 def terminalUtf8Encoding(nltkInstall):
 	import os
+	import sys
+	print("Check if the terminal is compatible with utf-8 encoding : ")
 	try:
-		print (u"åäö")
+		print ("'\u03bb'")
+		print("\nThe terminal is compatible.")
 	except:
+		print("\nThe terminal isn't compatible.")
+		print("The script will change some variables to adapt this.")
 		if nltkInstall.getNameOS() == "nt":
 			os.system("chcp 65001")
+			print("Modification have been made.")
+			os.execv(sys.executable, ['python'] + sys.argv)
 		else:
 			os.system("export LC_ALL=en_US.UTF-8")
 			os.system("export LANG=en_US.UTF-8")
 			os.system("export LANGUAGE=en_US.UTF-8")
+			print("Modification have been made.\n")
 
 def progressInstallation(nltkInstall):
 	#Check if progress is installed to show progression bar
