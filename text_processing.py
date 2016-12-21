@@ -37,12 +37,12 @@ def python2Utf8Encoding():
 def terminalUtf8Encoding(nltkInstall):
 	import os
 	import sys
-	print("Check if the terminal is compatible with utf-8 encoding : ")
+	print("\nCheck if the terminal is compatible with utf-8 encoding : ")
 	try:
-		print ("'\u03bb'")
-		print("\nThe terminal is compatible.")
+		print("'\u03bb'")
+		print("\nThe terminal is compatible.\n")
 	except:
-		print("\nThe terminal isn't compatible.")
+		print("\nThe terminal isn't compatible.\n")
 		print("The script will change some variables to adapt this.")
 		if nltkInstall.getNameOS() == "nt":
 			os.system("chcp 65001")
@@ -309,6 +309,74 @@ def check_couple_in_sentences(d_abstracts_sentences_NandV, window):
 	print("Couples in sentences in abstracts checked.")
 	return d_abstracts_sentences_couples_checked
 
+def merge_couplesNV_from_all_abstracts(d_abstract_couple_numbers):
+	from progress.bar import Bar
+
+	d_couplesNV_corpus = {}
+
+	print("\nMerging couples NV in corpus.")
+	bar = Bar('Processing', max = len(d_abstract_couple_numbers))
+
+	for abstractIndex, abstract in d_abstract_couple_numbers.items():
+		for coupleNV, occurenceNV in abstract.items():
+			if coupleNV not in d_couplesNV_corpus:
+				d_couplesNV_corpus[coupleNV] = occurenceNV
+			elif coupleNV in d_couplesNV_corpus:
+				d_couplesNV_corpus[coupleNV] += occurenceNV
+
+		bar.next()
+
+	bar.finish()
+
+	print("Couples NV in corpus merged.")
+	return d_couplesNV_corpus
+
+def couplesNV_selection_with_cut_off(d_couplesNV_corpus, cutOff):
+	from progress.bar import Bar
+
+	d_couplesNV_cutOff_corpus = {}
+
+	print("\nChecking couples NV in corpus, which exceed the cut-off.")
+	bar = Bar('Processing', max = len(d_couplesNV_corpus))
+
+	for couplesNV, occurenceNV in d_couplesNV_corpus.items():
+		if occurenceNV >= cutOff:
+			if couplesNV not in d_couplesNV_cutOff_corpus:
+				d_couplesNV_cutOff_corpus[couplesNV] = occurenceNV
+			elif couplesNV in d_couplesNV_cutOff_corpus:
+				d_couplesNV_cutOff_corpus[couplesNV] += occurenceNV
+
+		bar.next()
+
+	bar.finish()
+
+	print("Couples NV in corpus, which exceed the cut-off checked.")
+	print("From " + str(len(d_couplesNV_corpus)) + " couples in corpus, " + str(len(d_couplesNV_cutOff_corpus)) + " have been selectionned.")
+	return d_couplesNV_cutOff_corpus
+
+def create_file_with_couple(d_couplesNV_cutOff_corpus):
+	from progress.bar import Bar
+	import csv
+
+	outputfile  = open('couplesNV_corpus.tsv', "wb")
+	writer = csv.writer(outputfile, delimiter='\t')
+
+	writer.writerow(["Nouns", "Verbs", "Occurences"])
+
+	print("\nWriting couples into a tsv file named : couplesNV_corpus.tsv.")
+	bar = Bar('Processing', max = len(d_couplesNV_cutOff_corpus))
+
+	for couplesNV, occurenceNV in d_couplesNV_cutOff_corpus.items():
+		l_couplesNV = couplesNV.split("\\")
+		l_couplesNV.append(occurenceNV)
+		writer.writerow(l_couplesNV)
+		bar.next()
+
+	bar.finish()
+
+	outputfile.close()
+	print("Couples writed, file created.")
+
 def main():
 	nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'], "3.2.1")
 	moduleCheckAndInstallation(nltkInstall)
@@ -318,6 +386,8 @@ def main():
 	d_abstracts_text_lines = tokenizationAndTagging(d_abstractWithSentencesModified)
 	d_abstracts_sentences_NandV = nouns_and_verbs_by_sentences(d_abstracts_text_lines)
 	d_abstract_couple_numbers = check_couple_in_sentences(d_abstracts_sentences_NandV , 1)
-	print(d_abstract_couple_numbers)
+	d_couplesNV_corpus = merge_couplesNV_from_all_abstracts(d_abstract_couple_numbers)
+	d_couplesNV_cutOff_corpus = couplesNV_selection_with_cut_off(d_couplesNV_corpus, 5)
+	create_file_with_couple(d_couplesNV_cutOff_corpus)
 
 main()
