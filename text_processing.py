@@ -34,6 +34,18 @@ def python2Utf8Encoding():
 	reload(sys)
 	sys.setdefaultencoding('utf8')
 
+def terminalUtf8Encoding(nltkInstall):
+	import os
+	try:
+		print (u"åäö")
+	except:
+		if nltkInstall.getNameOS() == "nt":
+			os.system("chcp 65001")
+		else:
+			os.system("export LC_ALL=en_US.UTF-8")
+			os.system("export LANG=en_US.UTF-8")
+			os.system("export LANGUAGE=en_US.UTF-8")
+
 def progressInstallation(nltkInstall):
 	#Check if progress is installed to show progression bar
 	#And import basic data from nltkInstall Instance to ease installation
@@ -292,6 +304,7 @@ def check_couple_in_sentences(d_abstracts_sentences_NandV, window):
 def main():
 	nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'], "3.2.1")
 	moduleCheckAndInstallation(nltkInstall)
+	terminalUtf8Encoding(nltkInstall)
 	d_abstractWithSentences = xmlAbstractExtraction("predator-prey[Title]", nltkInstall)
 	d_abstractWithSentencesModified = sentenceCheck(d_abstractWithSentences)
 	d_abstracts_text_lines = tokenizationAndTagging(d_abstractWithSentencesModified)
