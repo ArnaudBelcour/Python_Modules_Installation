@@ -377,6 +377,15 @@ def create_file_with_couple(d_couplesNV_cutOff_corpus):
 	outputfile.close()
 	print("Couples writed, file created.")
 
+def choice_input_number(variableName, nltkInstall):
+	sentenceChocie = "\nSelect value of " + variableName + ": "
+	if nltkInstall.getPythonVersion() < (3,0,0):
+		choice = int(raw_input(sentenceChocie).lower())
+	elif nltkInstall.getPythonVersion() > (3,0,0):
+		choice = int(input(sentenceChocie))
+
+	return choice
+
 def main():
 	nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'], "3.2.1")
 	moduleCheckAndInstallation(nltkInstall)
@@ -385,9 +394,11 @@ def main():
 	d_abstractWithSentencesModified = sentenceCheck(d_abstractWithSentences)
 	d_abstracts_text_lines = tokenizationAndTagging(d_abstractWithSentencesModified)
 	d_abstracts_sentences_NandV = nouns_and_verbs_by_sentences(d_abstracts_text_lines)
-	d_abstract_couple_numbers = check_couple_in_sentences(d_abstracts_sentences_NandV , 1)
+	windowLengthChoice =  choice_input_number("window_Length", nltkInstall)
+	d_abstract_couple_numbers = check_couple_in_sentences(d_abstracts_sentences_NandV , windowLengthChoice)
 	d_couplesNV_corpus = merge_couplesNV_from_all_abstracts(d_abstract_couple_numbers)
-	d_couplesNV_cutOff_corpus = couplesNV_selection_with_cut_off(d_couplesNV_corpus, 5)
+	cutOffChoice =  choice_input_number("cut_off", nltkInstall)
+	d_couplesNV_cutOff_corpus = couplesNV_selection_with_cut_off(d_couplesNV_corpus, cutOffChoice)
 	create_file_with_couple(d_couplesNV_cutOff_corpus)
 
 main()
