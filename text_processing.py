@@ -40,9 +40,9 @@ def terminalUtf8Encoding(nltkInstall):
 	print("\nCheck if the terminal is compatible with utf-8 encoding : ")
 	try:
 		print("'\u03bb'")
-		print("\nThe terminal is compatible.\n")
+		print("The terminal is compatible.\n")
 	except:
-		print("\nThe terminal isn't compatible.\n")
+		print("The terminal isn't compatible.\n")
 		print("The script will change some variables to adapt this.")
 		if nltkInstall.getNameOS() == "nt":
 			os.system("chcp 65001")
