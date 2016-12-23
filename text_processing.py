@@ -433,6 +433,13 @@ def occurrence_distribution(d_nouns_occurrence, window_distribution):
 		bar.next()
 
 	bar.finish()
+	l_temporary = []
+	for key in d_nouns_occurrence_distribution:
+		if len(d_nouns_occurrence_distribution[key]) == 1:
+			l_temporary.append(key)
+
+	for key in l_temporary:
+		del d_nouns_occurrence_distribution[key]
 
 	print("Occurrence distribution processed.")
 
