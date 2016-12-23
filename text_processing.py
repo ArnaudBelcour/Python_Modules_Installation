@@ -79,7 +79,7 @@ def xmlAbstractExtraction(fileName, nltkInstall):
 
 	d_abstractsSentencesExtracted = {}
 
-	print ("\nParsing and extracting abstracts from corpus")
+	print ("\nParsing and extracting abstracts from corpus.")
 	bar = Bar('Processing', max=len(l_abstracts))
 
 	for abstractDOM in l_abstracts:
@@ -135,7 +135,7 @@ def tokenizationAndTagging(d_abstracts):
 
 	sentencesNumber = sum([len(value) for value in d_abstracts.values()])
 
-	print ("\nAbstract tokenization and tagging")
+	print ("\nAbstract tokenization and tagging.")
 	bar = Bar('Processing', max = len(d_abstracts))
 
 	for index, abstract in d_abstracts.items():
