@@ -46,7 +46,7 @@ def terminalUtf8Encoding(nltkInstall):
 		print("The script will change some variables to adapt this.")
 		if nltkInstall.getNameOS() == "nt":
 			os.system("chcp 65001")
-			print("Modification have been made.")
+			print("Modification have been made.\n")
 			os.execv(sys.executable, ['python'] + sys.argv)
 		else:
 			os.system("export LC_ALL=en_US.UTF-8")
@@ -386,19 +386,25 @@ def choice_input_number(variableName, nltkInstall):
 
 	return choice
 
-def count_noun_in_couple(d_couplesNV_cutOff_corpus):
+def count_noun_in_couple(d_couplesNV_cutOff_corpus, nltkInstall):
 	from progress.bar import Bar
+	from nltk.stem import WordNetLemmatizer
 
+	wordnet_lemmatizer = WordNetLemmatizer()
 	d_nouns_occurrence = {}
 
 	print("\nRetrieving all nouns and their occurrence in the couples.")
 	bar = Bar('Processing', max = len(d_couplesNV_cutOff_corpus))
 
 	for couplesNV, occurrenceNV in d_couplesNV_cutOff_corpus.items():
-		nounsFromCouplesNV = couplesNV.split("\\")[1]
+		if nltkInstall.getPythonVersion() < (3,0,0):
+			nounsFromCouplesNV = wordnet_lemmatizer.lemmatize(couplesNV.split("\\")[1]).encode("utf-8")
+		elif nltkInstall.getPythonVersion() > (3,0,0):
+			nounsFromCouplesNV = wordnet_lemmatizer.lemmatize(couplesNV.split("\\")[1])
+
 		if nounsFromCouplesNV not in d_nouns_occurrence:
 			d_nouns_occurrence[nounsFromCouplesNV] = occurrenceNV
-		if nounsFromCouplesNV in d_nouns_occurrence:
+		elif nounsFromCouplesNV in d_nouns_occurrence:
 			d_nouns_occurrence[nounsFromCouplesNV] += occurrenceNV
 		bar.next()
 
@@ -446,7 +452,7 @@ def occurrence_distribution(d_nouns_occurrence, window_distribution):
 	return d_nouns_occurrence_distribution
 
 def main():
-	nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'], "3.2.1")
+	nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger', 'wordnet'], "3.2.1")
 	moduleCheckAndInstallation(nltkInstall)
 	terminalUtf8Encoding(nltkInstall)
 	d_abstractWithSentences = xmlAbstractExtraction("predator-prey[Title]", nltkInstall)
@@ -459,7 +465,7 @@ def main():
 	cutOffChoice =  choice_input_number("cut_off", nltkInstall)
 	d_couplesNV_cutOff_corpus = couplesNV_selection_with_cut_off(d_couplesNV_corpus, cutOffChoice)
 	create_file_with_couple(d_couplesNV_cutOff_corpus)
-	d_nouns_occurrence = count_noun_in_couple(d_couplesNV_cutOff_corpus)
+	d_nouns_occurrence = count_noun_in_couple(d_couplesNV_cutOff_corpus, nltkInstall)
 	windowDistribution =  choice_input_number("window_distribution", nltkInstall)
 	d_nouns_occurrence_distribution = occurrence_distribution(d_nouns_occurrence, windowDistribution)
 	print(d_nouns_occurrence_distribution)
