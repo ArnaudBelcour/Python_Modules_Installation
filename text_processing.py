@@ -358,7 +358,7 @@ def create_file_with_couple(d_couplesNV_cutOff_corpus):
 	from progress.bar import Bar
 	import csv
 
-	outputfile  = open('couplesNV_corpus.tsv', "wb")
+	outputfile  = open('couplesNV_corpus.tsv', "wt")
 	writer = csv.writer(outputfile, delimiter='\t')
 
 	writer.writerow(["Nouns", "Verbs", "Occurences"])
@@ -386,6 +386,39 @@ def choice_input_number(variableName, nltkInstall):
 
 	return choice
 
+def occurrence_distribution(d_couplesNV_cutOff_corpus, window_distribution):
+	from progress.bar import Bar
+
+	d_abstract_occurrence_distribution = {}
+
+	print("\nProcessing occurrence distribution for all couples.")
+	bar = Bar('Processing', max = len(d_couplesNV_cutOff_corpus))
+
+	for couplesNV, occurrenceNV in d_couplesNV_cutOff_corpus.items():
+		nounsFromCouplesNV = couplesNV.split("\\")[1]
+		l_distribution = []
+		l_distribution.append(nounsFromCouplesNV)
+		for couplesNV_comparison, occurrenceNV_comparison in d_couplesNV_cutOff_corpus.items():
+			nounsFromCouplesNV_comparison = couplesNV_comparison.split("\\")[1]
+			if occurrenceNV_comparison == occurrenceNV:
+				l_distribution.append(nounsFromCouplesNV_comparison)
+			for number_distribution in range(window_distribution):
+				number_distribution = number_distribution + 1
+				occurrenceNV_comparison_more = occurrenceNV_comparison + number_distribution
+				occurrenceNV_comparison_minus = occurrenceNV_comparison - number_distribution
+				if occurrenceNV_comparison_more == occurrenceNV:
+					l_distribution.append(nounsFromCouplesNV_comparison)
+				if occurrenceNV_comparison_minus == occurrenceNV:
+					l_distribution.append(nounsFromCouplesNV_comparison)
+		d_abstract_occurrence_distribution[occurrenceNV] = l_distribution
+		bar.next()
+
+	bar.finish()
+
+	print("\nOccurrence distribution processed.")
+
+	return d_abstract_occurrence_distribution
+
 def main():
 	nltkInstall = ModuleInstallation("nltk", ['punkt', 'averaged_perceptron_tagger'], "3.2.1")
 	moduleCheckAndInstallation(nltkInstall)
@@ -400,5 +433,8 @@ def main():
 	cutOffChoice =  choice_input_number("cut_off", nltkInstall)
 	d_couplesNV_cutOff_corpus = couplesNV_selection_with_cut_off(d_couplesNV_corpus, cutOffChoice)
 	create_file_with_couple(d_couplesNV_cutOff_corpus)
+	windowDistribution =  choice_input_number("window_distribution", nltkInstall)
+	d_abstract_occurrence_distribution = occurrence_distribution(d_couplesNV_cutOff_corpus, windowDistribution)
+	print(d_abstract_occurrence_distribution)
 
 main()
